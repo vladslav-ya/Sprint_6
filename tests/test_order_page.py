@@ -1,24 +1,18 @@
 import allure
 import pytest
 
-from selenium import webdriver
-
 from data import FIELD_DATA
 from pages.order_page import OrderPage
 
 
 class TestOrderPage:
 
-    def setup_method(self):
-        self.driver = webdriver.Firefox()
-        self.driver.maximize_window()
-
     @allure.title('Проверка позитивного сценария заказа самоката')
     @allure.description('Проверяется весь флоу позитивного сценария с двумя наборами данных')
     @pytest.mark.parametrize('data', FIELD_DATA)
-    def test_positive_order_first_button(self, data):
-        self.driver.get('https://qa-scooter.praktikum-services.ru/')
-        order_page = OrderPage(self.driver)
+    def test_positive_order_first_button(self, data, driver):
+        order_page = OrderPage(driver)
+        order_page.open_home_page()
 
         order_page.click_on_order_button(data[0])
         for field, text in data[1:5]:
@@ -39,12 +33,8 @@ class TestOrderPage:
 
         order_page.click_scooter_logo()
         order_page.wait_until_page_loaded()
-        assert self.driver.current_url == "https://qa-scooter.praktikum-services.ru/"
+        assert order_page.get_current_url() == "https://qa-scooter.praktikum-services.ru/"
 
         order_page.click_yandex_logo()
-        self.driver.switch_to.window(self.driver.window_handles[1])
-        order_page.wait_until_page_loaded()
-        assert "dzen.ru" in self.driver.current_url
-
-    def teardown_method(self):
-        self.driver.quit()
+        order_page.switch_to_new_page()
+        assert "dzen.ru" in order_page.get_current_url()
